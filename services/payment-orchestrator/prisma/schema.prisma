@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum payment_transactions_status {
+    draft // Mới tạo
+    requires_payment_method // Thẻ bị từ chối hoặc chưa nhập thông tin thẻ
+    requires_action // Chờ xác thực OTP / 3D Secure từ khách hàng
+    processing // Stripe đang xử lý
+    succeeded
+    failed
+
+    canceled // Người dùng chủ động hủy hoặc hết hạn thanh toán
+    refunded // Giao dịch đã được hoàn tiền
+}
+
+enum payment_transactions_three_ds_status {
+    authenticated
+    attempted
+    failded
+}
+
+enum payment_transactions_fraud_action {
+    allow
+    challenge_3ds
+    block
+}
+
+model payment_transactions {
+    id String @id @default(dbgenerated("uuidv7()")) @db.Uuid
+    userId String @db.Uuid
+    stripe_payment_intent_id String? @unique
+    stripe_payment_method_id String?
+    amount BigInt
+    currency String
+    status payment_transactions_status 
+    three_ds_status payment_transactions_three_ds_status?
+    // fraud_score Int 
+    // fraud_action payment_transactions_fraud_action
+    // nonce String @unique
+    confirmed_at DateTime?
+    stripe_event_id String?
+    created_at DateTime @default(now())
+
+    // payment_nonces payment_nonces[]
+}
+
+/*
+Chống replay attack
+*/
+// model payment_nonces {
+//     id String @id @default(dbgenerated("uuidv7()")) @db.Uuid
+//     user_id String
+//     payment_transaction_id String @db.Uuid
+//     used Boolean @default(false)
+//     used_at DateTime? 
+//     expires_at DateTime?
+//     created_at DateTime @default(now())
+
+//     payment_transaction payment_transactions @relation(fields: [payment_transaction_id], references: [id])
+// }

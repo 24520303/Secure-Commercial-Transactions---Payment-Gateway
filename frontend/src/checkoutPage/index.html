@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Nhúng Stripe.js v3 -->
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <div class="checkout-container">
+        <h2>Thanh toán đơn hàng</h2>
+        <p class="amount">Số tiền: <strong>100.000 đ</strong></p>
+        
+        <form id="payment-form">
+            <div class="form-group">
+                <label for="cardholder-name">Tên trên thẻ</label>
+                <input type="text" id="cardholder-name" placeholder="NGUYEN VAN A" required>
+            </div>
+
+            <div class="form-group">
+                <label for="card-element">Thông tin thẻ</label>
+                <!-- Thẻ div này sẽ được Stripe.js biến thành form nhập thẻ chuẩn bảo mật -->
+                <div id="card-element"></div>
+                <!-- Nơi hiển thị lỗi cấu hình hoặc lỗi nhập thẻ -->
+                <div id="card-errors" role="alert"></div>
+            </div>
+
+            <button id="submit-btn">
+                <div class="spinner hidden" id="spinner"></div>
+                <span id="button-text">Thanh toán ngay</span>
+            </button>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
