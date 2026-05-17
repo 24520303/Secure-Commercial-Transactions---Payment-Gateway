@@ -2,7 +2,7 @@
   "name": "payment-orchestrator",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
-    "build": "tsc",
+    "build": "npx prisma generate && tsc",
     "start": "node dist/app.js"
   },
   "dependencies": {

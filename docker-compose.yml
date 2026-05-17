@@ -3,8 +3,30 @@ version: "3.9"
 volumes:
   payment_orchestrator_db:
   stripe_cli:
+  payment-orchestrator:
 
 services:
+
+  payment-orchestrator:
+    container_name: payment_orchestrator
+    env_file:
+      - .env
+    build:
+      context: ./services/payment-orchestrator
+      dockerfile: Dockerfile
+      args:
+        DATABASE_URL: ${DATABASE_URL} 
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=${DATABASE_URL}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    ports:
+      - "8083:8083"
+    depends_on:
+      - payment_orchestrator_db
+    restart: unless-stopped
+
 
   payment_orchestrator_db:
     image: postgres:18-alpine
@@ -27,6 +49,4 @@ services:
     command: >
       listen
       --api-key ${STRIPE_SECRET_KEY}
-      --forward-to http://host.docker.internal:3600/api/stripe-webhook
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      --forward-to http://payment_orchestrator:8083/api/stripe-webhook

@@ -3,7 +3,7 @@
 const stripe = Stripe('pk_test_51TDj4xHG5kjK9VxF23zI02NKrGAbSZOiOrofKsp7y1Mb3EMwc29lTAejYHCxb3ih7DX6fOqQ5HkIOIMtu4aFBLIm00BmzuvoGw'); 
 const elements = stripe.elements();
 
-const serverUrl = 'http://localhost:3600'
+const serverUrl = 'http://localhost:8083'
 
 // 2. Custom style một chút cho ô nhập thẻ của Stripe
 const style = {

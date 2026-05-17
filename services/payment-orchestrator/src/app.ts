@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
   res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
-const PORT = 3600;
+const PORT = 8083;
 app.listen(PORT, () => {
   console.log(`Service Payment-orchestrator đang chạy trên cổng ${PORT}`)
 })
