@@ -1,5 +1,4 @@
 import { Request, Response } from 'express'
-import Stripe from 'stripe'
 
 import * as stripeWebhookService from '../services/stripeWebhookService'
 

@@ -2,10 +2,13 @@ import { z } from "zod";
 
 export const createPaymentIntentSchema = z.object({
     userId: z.string(),
-    orderIds: z.uuidv7().array(),
+    checkoutSessionId: z.string(),
     amount: z.number().int().positive(),
     currency: z.string(),
-    paymentMethodId: z.string(),
+    sellerBreakdowns: z.object({
+        stripeAccountId: z.string(),
+        amount: z.number().int().positive(),
+    }).array()
 })
 
 export type createPaymentIntentSchema = z.infer<typeof createPaymentIntentSchema>

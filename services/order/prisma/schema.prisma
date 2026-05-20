@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum order_status {
+    pending // Vừa tạo, đang chờ thanh toán
+    payment_pending // Đã gửi sang Orchestrator
+    captured // Thành công?
+    cancelled
+    failed
+}
+
+enum checkout_session_status {
+    pending
+    paid
+    canceled
+}
+
+model sellers {
+    id String @id @default(dbgenerated("uuidv7()")) @db.Uuid
+    user_id String @db.Uuid @unique
+    stripe_account_id String
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
+
+    product products[]
+    order orders[]
+}
+
+model products {
+    id String @id @default(dbgenerated("uuidv7()")) @db.Uuid
+    seller_id String @db.Uuid
+    name String @default("Đá")
+    price Int @default(67000)
+    currency String @default("vnd")
+    stock_quantity Int @default(36) // Số hàng còn
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
+
+    seller sellers @relation(fields: [seller_id], references: [id])
+
+    orders order_items[]
+}
+
+model orders {
+    id String @id @default(dbgenerated("uuidv7()")) @db.Uuid
+    buyer_id String @db.Uuid
+    seller_id String
+    status order_status @default(pending)
+    total_amount BigInt
+    currency String
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
+
+    seller sellers @relation(fields: [seller_id], references: [id])
+
+    products order_items[]
+    checkout_sessions checkout_sessions_orders[]
+}
+
+model order_items {
+    product_id String @db.Uuid
+    order_id String @db.Uuid
+    quantity Int
+
+    product products @relation(fields: [product_id], references: [id])
+    order orders @relation(fields: [order_id], references: [id])
+
+    @@id([product_id, order_id])
+}
+
+/* Tạo thông tin thanh toán cho giỏ hàng */
+model checkout_sessions {
+    id String @id @default(dbgenerated("uuidv7()")) @db.Uuid
+    buyer_id String @db.Uuid
+    total_amount BigInt
+    currency String
+    status checkout_session_status @default(pending)
+    sellerBreakdowns Json // Thông tin các order item gom theo seller
+    expires_at DateTime
+    created_at DateTime @default(now())
+    updated_at DateTime @default(now())
+
+    orders checkout_sessions_orders[]
+}
+
+model checkout_sessions_orders {
+    checkout_session_id String @db.Uuid
+    order_id String @db.Uuid
+    created_at DateTime @default(now())
+
+    checkout_session checkout_sessions @relation(fields: [checkout_session_id], references: [id])
+    order orders @relation(fields: [order_id], references: [id])
+
+    @@id([checkout_session_id, order_id])
+}

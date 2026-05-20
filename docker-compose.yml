@@ -1,11 +1,29 @@
 version: "3.9"
 
 volumes:
+  order_db:
   payment_orchestrator_db:
   stripe_cli:
   payment-orchestrator:
 
 services:
+
+  order:
+    container_name: order
+    env_file:
+      - .env
+    build:
+      context: ./services/order
+      dockerfile: Dockerfile
+      args:
+        DATABASE_URL: ${ORDER_DB_URL}
+    environment:
+      - DATABASE_URL=${ORDER_DB_URL}
+    ports:
+      - "8082:8082"
+    depends_on:
+      - order_db
+    restart: unless-stopped
 
   payment-orchestrator:
     container_name: payment_orchestrator
@@ -15,10 +33,10 @@ services:
       context: ./services/payment-orchestrator
       dockerfile: Dockerfile
       args:
-        DATABASE_URL: ${DATABASE_URL} 
+        DATABASE_URL: ${PAYMENT_DB_URL} 
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=${PAYMENT_DB_URL}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
     ports:
@@ -27,14 +45,28 @@ services:
       - payment_orchestrator_db
     restart: unless-stopped
 
+  order_db:
+    image: postgres:18-alpine
+    container_name: order_db
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=order_db
+      - POSTGRES_USER=${ORDER_DB_USER}
+      - POSTGRES_PASSWORD=${ORDER_DB_PASSWORD}
+    volumes:
+      - order_db:/var/lib/postgresql/data
+    ports:
+      - "5431:5431"
+
 
   payment_orchestrator_db:
     image: postgres:18-alpine
     container_name: payment_orchestrator_db
     environment:
       POSTGRES_DB: payment_orchestrator_db
-      POSTGRES_USER: payment_orchestrator
-      POSTGRES_PASSWORD: payment_orchestrator
+      POSTGRES_USER: ${PAYMENT_DB_USER}
+      POSTGRES_PASSWORD: ${PAYMENT_DB_PASSWORD}
     volumes:
       - payment_orchestrator_db:/var/lib/postgresql/data
     ports:
