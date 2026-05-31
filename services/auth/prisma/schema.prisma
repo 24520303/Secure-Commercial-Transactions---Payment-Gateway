@@ -1,0 +1,14 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  email          String   @unique
+  hashedPassword String
+  created_at     DateTime @default(now())
+}

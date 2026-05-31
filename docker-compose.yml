@@ -1,13 +1,58 @@
 version: "3.9"
 
 volumes:
+  auth_db:
   order_db:
   payment_orchestrator_db:
   stripe_cli:
   payment-orchestrator:
 
 services:
+  api-gateway:
+    container_name: api_gateway
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - JWT_SECRET=PhuongThanhDo_BiThuat_2026
+      - AUTH_SERVICE_URL=http://auth:8081
+      - ORDER_SERVICE_URL=http://order:8082
+      - PAYMENT_SERVICE_URL=http://payment-orchestrator:8083
+    restart: unless-stopped
 
+  auth:
+    container_name: auth
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+      args:
+        DATABASE_URL: postgres://postgres:auth_password@auth_db:5432/auth_db
+    environment:
+      - PORT=8081
+      - DATABASE_URL=postgres://postgres:auth_password@auth_db:5432/auth_db
+      - JWT_SECRET=PhuongThanhDo_BiThuat_2026
+    ports:
+      - "8081:8081"
+    depends_on:
+      - auth_db
+    restart: unless-stopped
+
+  auth_db:
+    image: postgres:18-alpine
+    container_name: auth_db
+    environment:
+      - POSTGRES_DB=auth_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=auth_password
+      - PGDATA=/var/lib/postgresql/data/pgdata 
+    volumes:
+      - auth_db:/var/lib/postgresql/data
+    ports:
+      - "5430:5432"
+  
   order:
     container_name: order
     env_file:
@@ -82,3 +127,4 @@ services:
       listen
       --api-key ${STRIPE_SECRET_KEY}
       --forward-to http://payment_orchestrator:8083/api/stripe-webhook
+  
