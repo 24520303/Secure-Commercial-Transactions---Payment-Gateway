@@ -5,6 +5,10 @@ volumes:
   payment_orchestrator_db:
   stripe_cli:
   payment-orchestrator:
+  soft-hsm:
+  kms_db:
+  softhsm_tokens:
+    driver: local
 
 services:
 
@@ -45,6 +49,28 @@ services:
       - payment_orchestrator_db
     restart: unless-stopped
 
+  kms:
+    container_name: kms
+    env_file:
+      - .env
+    build: 
+      context: ./services/kms
+      dockerfile: Dockerfile
+      args:
+        DATABASE_URL: ${KMS_DB_URL} 
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=${KMS_DB_URL}
+      - USER_PIN=${HSM_USER_PIN}
+      - TOKEN_LABEL=${HSM_TOKEN_LABEL}
+    ports:
+      - "8084:8084"
+    volumes:
+      - softhsm_tokens:/var/lib/softhsm/tokens
+    depends_on:
+      - kms_db
+    restart: unless-stopped
+
   order_db:
     image: postgres:18-alpine
     container_name: order_db
@@ -59,7 +85,6 @@ services:
     ports:
       - "5431:5431"
 
-
   payment_orchestrator_db:
     image: postgres:18-alpine
     container_name: payment_orchestrator_db
@@ -72,6 +97,20 @@ services:
     ports:
       - "5432:5432"
 
+  kms_db:
+    container_name: kms_db
+    image: postgres:18-alpine
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: kms_db
+      POSTGRES_USER: ${KMS_DB_USER}
+      POSTGRES_PASSWORD: ${KMS_DB_PASSWORD}
+    volumes:
+      - kms_db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
 
   stripe_cli:
     image: stripe/stripe-cli
@@ -82,3 +121,19 @@ services:
       listen
       --api-key ${STRIPE_SECRET_KEY}
       --forward-to http://payment_orchestrator:8083/api/stripe-webhook
+
+  soft-hsm:
+    container_name: soft-hsm
+    env_file:
+      - .env
+    build: 
+      context: ./infra/softhsm
+      dockerfile: Dockerfile
+    environment:
+      - HSM_SO_PIN=${HSM_SO_PIN}
+      - HSM_USER_PIN=${HSM_USER_PIN}
+    volumes:
+      - softhsm_tokens:/var/lib/softhsm/tokens
+    restart: unless-stopped
+
+

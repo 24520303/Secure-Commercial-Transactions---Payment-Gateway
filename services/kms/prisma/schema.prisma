@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+model keys {
+    id String @id @default(dbgenerated("uuidv7()")) @db.Uuid
+    label String @unique
+    pkcs11_id String // hex id (01, 02, 03...)
+    key_type String // EC', 'AES', ...
+    usage key_usage
+    status key_status @default(active)
+    version Int @default(1)
+    created_at DateTime @default(now())
+    retired_at DateTime?
+
+    key_rotations key_rotations[]
+}
+
+model key_rotations {
+    id String @id @default(dbgenerated("uuidv7()")) @db.Uuid
+    key_id String @db.Uuid
+    old_version Int
+    new_version Int
+    reason key_rotation_reason
+    created_at DateTime @default(now())
+
+    key keys @relation(fields: [key_id], references: [id])
+
+    @@index([key_id])
+}
+
+enum key_usage {
+    sign 
+    wrap 
+}
+
+enum key_status {
+    active
+    retired
+    pending
+}
+
+enum key_rotation_reason {
+    scheduled
+    manual
+    compromised
+}

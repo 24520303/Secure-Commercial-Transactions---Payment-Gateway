@@ -1,0 +1,219 @@
+{
+  "info": {
+    "name": "KMS Service Tests",
+    "description": "Test requests for Key Management Service (KMS)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/health",
+              "host": ["{{BASE_URL}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Keys",
+      "item": [
+        {
+          "name": "List All Keys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/keys",
+              "host": ["{{BASE_URL}}"],
+              "path": ["keys"]
+            }
+          }
+        },
+        {
+          "name": "Wrap Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetLabel\": \"my-key\",\n  \"kekLabel\": \"kek\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/keys/wrap",
+              "host": ["{{BASE_URL}}"],
+              "path": ["keys", "wrap"]
+            }
+          }
+        },
+        {
+          "name": "Unwrap Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"wrappedKey\": \"base64-encoded-wrapped-key-here\",\n  \"kekLabel\": \"kek\",\n  \"newLabel\": \"unwrapped-key-label\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/keys/unwrap",
+              "host": ["{{BASE_URL}}"],
+              "path": ["keys", "unwrap"]
+            }
+          }
+        },
+        {
+          "name": "Rotate Key",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/keys/my-key/rotate",
+              "host": ["{{BASE_URL}}"],
+              "path": ["keys", "my-key", "rotate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cryptography",
+      "item": [
+        {
+          "name": "Encrypt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyLabel\": \"my-encryption-key\",\n  \"plaintext\": \"aGVsbG8gd29ybGQ=\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/crypto/encrypt",
+              "host": ["{{BASE_URL}}"],
+              "path": ["crypto", "encrypt"]
+            }
+          }
+        },
+        {
+          "name": "Decrypt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyLabel\": \"my-encryption-key\",\n  \"ciphertext\": \"base64-ciphertext-here\",\n  \"iv\": \"base64-iv-here\",\n  \"tag\": \"base64-tag-here\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/crypto/decrypt",
+              "host": ["{{BASE_URL}}"],
+              "path": ["crypto", "decrypt"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Signing",
+      "item": [
+        {
+          "name": "Sign Receipt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payload\": \"aGVsbG8gd29ybGQ=\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/sign/receipt",
+              "host": ["{{BASE_URL}}"],
+              "path": ["sign", "receipt"]
+            }
+          }
+        },
+        {
+          "name": "Sign Settlement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payload\": \"aGVsbG8gd29ybGQ=\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/sign/settlement",
+              "host": ["{{BASE_URL}}"],
+              "path": ["sign", "settlement"]
+            }
+          }
+        },
+        {
+          "name": "Verify Signature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyLabel\": \"receipt-signing-key\",\n  \"payload\": \"aGVsbG8gd29ybGQ=\",\n  \"signature\": \"base64-signature-here\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/sign/verify",
+              "host": ["{{BASE_URL}}"],
+              "path": ["sign", "verify"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:8084",
+      "type": "string"
+    }
+  ]
+}
